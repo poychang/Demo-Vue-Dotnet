@@ -26,6 +26,9 @@ namespace DemoVueDotnet
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            // Add DB context modified by Taishan
+            services.AddDbContext<DemoVueDotnetContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("DemoVueDotnetContext")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
