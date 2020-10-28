@@ -1,41 +1,113 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+
+     <table v-show="contactsList.length" class="table-condensed" border="1">
+            <thead class="navbar-header">
+                <tr>
+                    <th>姓名</th>
+                    <th>电话号码</th>
+                    <th>Email地址</th>
+                    <th>操作</th>
+                </tr>
+                <tr v-for="contact in contactsList" :key="contact.id">
+                    <td><input type="text" v-model="contact.name" /></td>
+                    <td><input type="text" v-model="contact.phoneNo" /></td>
+                    <td><input type="text" v-model="contact.emailAddress" /></td>
+                    <td>
+                        <div v-if="contact.id!=''">
+                            <a href="#" v-on:click="updateContact(contact.id,contact.name,contact.phoneNo,contact.emailAddress)">修改</a>
+                            <a href="#" v-on:click="deleteContactById(contact.id)">删除</a>
+                        </div>
+                        <div v-else>
+                            <a href="#" v-on:click="addContact(contact.name,contact.phoneNo,contact.emailAddress)">添加</a>
+                        </div>
+                    </td>
+                </tr>
+            </thead>
+        </table>
+ 
+   
   </div>
 </template>
 
 <script>
+
+import axios from 'axios'
+
 export default {
   name: 'HelloWorld',
   props: {
     msg: String
-  }
+  },
+
+  data() {
+    return{
+      contactsList : [],
+    }      
+  },
+
+  mounted() {
+      this.getAllContacts();
+  },
+
+  methods: {
+      getAllContacts: function () {
+          axios.get('https://localhost:44369/api/contacts')
+          .then(
+              (response) => {
+                  this.contactsList = [];
+                  for (var i = 0; i < response.data.length; i++) {
+                      this.contactsList.push(response.data[i]);
+                  }
+                  this.contactsList.push({ id: "", name: "xxx", phoneNo: "123", emailAddress: "123@xxx" });
+              },
+              (response) => {
+                  alert(response.status);
+              })
+          .catch(function (response) {
+              alert(response);
+          });
+      },
+      addContact: function (name, phoneno, emailaddress) {
+          axios.post('https://localhost:44369/api/contacts',
+              {  Name: name, Phoneno: phoneno, Emailaddress: emailaddress })
+            .then(
+                (response) => {
+                  this.getAllContacts();
+                  alert(response.status);
+              }
+          ).catch(function (response) {
+              alert(response);
+          });
+      },
+      updateContact: function (id, name, phoneno, emailaddress) {
+          var Url = "https://localhost:44369/api/contacts/" + id;
+          axios.put(Url,
+              { Id : id, Name: name, PhoneNo: phoneno, EmailAddress: emailaddress })
+            .then(                   
+                (response) => {
+                  this.getAllContacts();
+                  alert(response.status);
+              }
+          ).catch(function (response) {
+              alert(response);
+          });
+      },
+      deleteContactById: function (id) {
+          var Url = "https://localhost:44369/api/contacts/" + id;
+          axios.delete(Url)
+            .then(
+                (response) => {
+                  this.getAllContacts();
+                  alert(response.status);
+              }
+          ).catch(function (response) {
+              alert(response);
+          });
+      }
+  }   
+
 }
 </script>
 
